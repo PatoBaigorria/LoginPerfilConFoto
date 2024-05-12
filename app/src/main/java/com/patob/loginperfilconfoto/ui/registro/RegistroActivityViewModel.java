@@ -31,6 +31,8 @@ import java.io.IOException;
 
 public class RegistroActivityViewModel extends AndroidViewModel {
     private Context context;
+
+    private ApiClient api;
     private MutableLiveData<Usuario> mUsuario;
 
     private MutableLiveData<Bitmap>mFoto;
@@ -40,41 +42,46 @@ public class RegistroActivityViewModel extends AndroidViewModel {
 
         super(application);
         context = application.getApplicationContext();
+        api = new ApiClient();
     }
 
-    public MutableLiveData<Usuario> getmUsuario() {
+    public MutableLiveData<Usuario> getMUsuario() {
         if(mUsuario==null){
             mUsuario=new MutableLiveData<>();
         }
         return mUsuario;
     }
-    public MutableLiveData<Bitmap> getmFoto() {
+    public MutableLiveData<Bitmap> getMFoto() {
         if(mFoto==null){
             mFoto=new MutableLiveData<>();
         }
         return mFoto;
     }
 
-    public void cargarDatos(Intent intent){
-        ApiClient api = new ApiClient();
-        int existe = intent.getFlags();
-        Usuario usuario = new Usuario();
-        if(existe != -1){
-            usuario = api.leer(getApplication());
+    public void cargarDatos(int i){
+        if(i == 1) {
+            Usuario usuario = api.leer(context);
+            mUsuario.setValue(usuario);
+        } else {
+            File archivo = new File(context.getFilesDir(), "foto.png");
+            if(archivo.exists()){
+                archivo.delete();
+            }
         }
-        mUsuario.setValue(usuario);
     }
 
     public void guardar(String dni, String nombre, String apellido, String email, String password) {
-        if(!dni.equals("") && !nombre.equals("") && !apellido.equals("") && !email.equals("") && !password.equals("")){
-            Usuario usuario = new Usuario(dni, nombre, apellido, email, password, "foto.png");
-            ApiClient api = new ApiClient();
-            api.guardar(getApplication(), usuario);
-            Intent intent = new Intent(getApplication(), MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getApplication().startActivity(intent);
+        File archivo = new File(context.getFilesDir(), "foto.png");
+        if(!archivo.exists()){
+            Toast.makeText(context, "Debe seleccionar una imagen para poder guardar el usuario", Toast.LENGTH_LONG).show();
+        } else if(dni.isEmpty() || nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || password.isEmpty()){
+            Toast.makeText(context, "Debe ingresar datos en todos campos para poder guardar el usuario", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(getApplication(), "Debe ingresar datos en todos los campos", Toast.LENGTH_LONG).show();
+            Usuario usuario = new Usuario(dni, nombre, apellido, email, password, "foto.png");
+            api.guardar(context, usuario);
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
         }
     }
     public void respuestaCamara(int requestCode, int resultCode, @Nullable Intent data, int REQUEST_IMAGE_CAPTURE){
@@ -85,7 +92,7 @@ public class RegistroActivityViewModel extends AndroidViewModel {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
             byte [] b = baos.toByteArray();
-            File archivo = new File(context.getFilesDir(), "perfil.png");
+            File archivo = new File(context.getFilesDir(), "foto.png");
             if (archivo.exists()){
                 archivo.delete();
             }
@@ -110,7 +117,7 @@ public class RegistroActivityViewModel extends AndroidViewModel {
     }
 
     public void cargarFoto(){
-        File archivo = new File(context.getFilesDir(), "perfil.png");
+        File archivo = new File(context.getFilesDir(), "foto.png");
         if(!archivo.exists()){
             Toast.makeText(context, "El archivo no existe, seleccione una imagen para cargar la foto", Toast.LENGTH_LONG).show();
         } else {

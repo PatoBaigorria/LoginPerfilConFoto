@@ -20,14 +20,14 @@ public class ApiClient {
     public void guardar(Context context, Usuario usuario){
         File archivo = new File(context.getFilesDir(), "datos.dat");
         try {
-            FileOutputStream fo = new FileOutputStream(archivo, false);
+            FileOutputStream fo = new FileOutputStream(archivo);
             BufferedOutputStream bo = new BufferedOutputStream(fo);
             ObjectOutputStream oos = new ObjectOutputStream(bo);
             oos.writeObject(usuario);
             bo.flush();
             oos.close();
         } catch (FileNotFoundException e) {
-            Toast.makeText(context, "Error al acceder al archivo", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Error al guardar", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             Toast.makeText(context, "Error al acceder al archivo", Toast.LENGTH_LONG).show();
         }
@@ -35,12 +35,17 @@ public class ApiClient {
 
     public Usuario leer(Context context){
         File archivo = new File(context.getFilesDir(), "datos.dat");
+        if(!archivo.exists()){
+            return null;
+        }
         Usuario usuario = null;
         try {
             FileInputStream fi = new FileInputStream(archivo);
             BufferedInputStream bis = new BufferedInputStream(fi);
             ObjectInputStream ois = new ObjectInputStream(bis);
-            usuario = (Usuario) ois.readObject();
+            usuario = (Usuario)ois.readObject();
+            ois.close();
+            fi.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -51,23 +56,10 @@ public class ApiClient {
         return usuario;
     }
 
-    public Usuario login(Context context, String mail, String password){
-        File archivo = new File(context.getFilesDir(), "datos.dat");
-
-        try {
-            FileInputStream fi = new FileInputStream(archivo);
-            BufferedInputStream bis = new BufferedInputStream(fi);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            Usuario usuario = (Usuario) ois.readObject();
-            if(usuario.getMail().equals(mail) && usuario.getPassword().equals(password)){
-                return usuario;
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+    public Usuario login(Context context, String email, String password){
+        Usuario usuario = leer(context);
+        if(usuario.getMail().equals(email) && usuario.getPassword().equals(password)){
+            return usuario;
         }
         return null;
     }

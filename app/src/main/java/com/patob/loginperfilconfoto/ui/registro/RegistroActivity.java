@@ -23,7 +23,7 @@ public class RegistroActivity extends AppCompatActivity {
         binding = ActivityRegistroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         vm = ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()).create(RegistroActivityViewModel.class);
-        vm.getmUsuario().observe(this, new Observer<Usuario>() {
+        vm.getMUsuario().observe(this, new Observer<Usuario>() {
             @Override
             public void onChanged(Usuario usuario) {
                 if (usuario != null){
@@ -37,7 +37,8 @@ public class RegistroActivity extends AppCompatActivity {
             }
         });
         Intent intent = getIntent();
-        vm.cargarDatos(intent);
+        int i = intent.getIntExtra("flag", 0);
+        vm.cargarDatos(i);
         binding.btGuardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,7 +50,7 @@ public class RegistroActivity extends AppCompatActivity {
                 vm.guardar(dni, nombre, apellido, email, password);
             }
         });
-        vm.getmFoto().observe(this, new Observer<Bitmap>() {
+        vm.getMFoto().observe(this, new Observer<Bitmap>() {
             @Override
             public void onChanged(Bitmap bitmap) {
                 binding.ivFoto.setImageBitmap(bitmap);

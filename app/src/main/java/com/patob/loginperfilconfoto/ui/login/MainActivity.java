@@ -12,11 +12,6 @@ import android.Manifest;
 import com.patob.loginperfilconfoto.databinding.ActivityMainBinding;
 
 
-
-
-
-
-
 public class MainActivity extends AppCompatActivity {
     private MainActivityViewModel vm;
     private ActivityMainBinding binding;
